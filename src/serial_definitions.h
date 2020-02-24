@@ -17,7 +17,15 @@ enum PacketType : uint8_t
     ENABLE_WIFI,
     PACK_PING,
     PONG,
-    ANTI_TIP
+    ANTI_TIP,
+    ULTRASONIC_SETPOS
+};
+
+enum UltrasonicGroup : uint8_t
+{
+    LEFT,
+    RIGHT,
+    BACK
 };
 
 struct PacketHeader
@@ -39,6 +47,12 @@ struct AntiTipPacket
 struct PrintDemoPacket
 {
     uint8_t line;
+};
+
+struct UltrasonicPosPacket
+{
+    UltrasonicGroup group;
+    uint8_t position;
 };
 
 #endif //SERIAL_DEFINITIONS_H

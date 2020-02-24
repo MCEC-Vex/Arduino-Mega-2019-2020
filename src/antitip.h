@@ -8,8 +8,9 @@
 
 MPU6050 mpu6050(Wire);
 RunningMedian gyroY = RunningMedian(5);
-unsigned long sessionHits = 0;
-unsigned long sessionMisses = 0;
+float sessionHits = 0;
+float sessionMisses = 0;
+unsigned long lastCheckMicros = 0;
 
 void setupAntitip()
 {
@@ -22,38 +23,50 @@ void setupAntitip()
 
 bool checkIfTipping()
 {
+    unsigned long currentCheck = micros();
+    unsigned long timePassed;
+
+    // Ensure micros hasn't overflowed (happens every 70 minutes or so)
+    if(currentCheck < lastCheckMicros)
+    {
+        timePassed = (LONG_MAX - lastCheckMicros) + currentCheck;
+    }
+    else
+    {
+        timePassed = currentCheck - lastCheckMicros;
+    }
+    lastCheckMicros = currentCheck;
+
     mpu6050.update();
 
     gyroY.add(mpu6050.getGyroX() * -1);
 
     // If the acceleration is past a threshold, add it to the psuedo~integration
-    if(gyroY.getMedian() > 20)
+    if(gyroY.getMedian() > 20.0)
     {
-        unsigned long med = gyroY.getMedian();
-        // Ensure the long isn't overflowed (I think that's why the robot screams)
-        if(sessionHits < LONG_MAX - med)
-        {
-            sessionHits += med;
-        }
+        float med = gyroY.getMedian();
+        
+        sessionHits += (med * (timePassed / 2000.0));
+
         // Output a tone proportional to the integration~ish~thing
         tone(ACTIVE_BUZZER, 200 + (sessionHits / 3));
     }
     else
     {
         // After a certain amount of acceleration under the threshold, cancel the tip session
-        sessionMisses++;
-        if(sessionMisses > 80)
+        sessionMisses += (timePassed / 2000.0);
+        if(sessionMisses >= 80.0)
         {
             noTone(ACTIVE_BUZZER);
-            sessionMisses = 0;
-            sessionHits = 0;
+            sessionMisses = 0.0;
+            sessionHits = 0.0;
         }
     }
 
     // If the integration passes a certain amount, trigger the anti-tip
-    //TODO make this timings-independent
-    if(sessionHits > 6000)
+    if(sessionHits >= 10000.0)
     {
+        sessionHits = 10000.0;
         return true;
     }
     return false;

@@ -7,6 +7,7 @@
 
 PacketSerial packetSerial;
 PacketSerial packetSerial1;
+PacketSerial packetSerial2;
 PacketSerial packetSerial3;
 
 void onPacketReceivedFromESP32(const uint8_t* buffer, size_t size)
@@ -28,7 +29,16 @@ void onPacketReceivedFromV5(const uint8_t* buffer, size_t size)
     if(header.flag == FORWARD)
     {
         packetSerial3.send(buffer, size);
-        Serial3.write(0);
+    }
+    else if(header.flag == PARSE_RAW)
+    {
+        /*if(header.type == ULTRASONIC_SETPOS)
+        {
+            UltrasonicPosPacket posPacket;
+            memcpy(&posPacket, buffer + sizeof(PacketHeader), sizeof(UltrasonicPosPacket));
+
+            
+        }*/
     }
 }
 
@@ -89,6 +99,9 @@ void setupCommunication()
 
     packetSerial1.setStream(&Serial1);
 
+    packetSerial2.setStream(&Serial2);
+    packetSerial2.setPacketHandler(&onPacketReceivedFromV5);
+
     packetSerial3.setStream(&Serial3);
     packetSerial3.setPacketHandler(&onPacketReceivedFromESP32);
 
@@ -100,5 +113,6 @@ void setupCommunication()
 void communicationLoop()
 {
     packetSerial1.update();
+    //packetSerial2.update();
     packetSerial3.update();
 }

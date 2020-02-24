@@ -10,17 +10,25 @@ void setup()
 {
     // Play a startup beep
     pinMode(ACTIVE_BUZZER, OUTPUT);
-    tone(ACTIVE_BUZZER, 1000);
+    tone(ACTIVE_BUZZER, 500);
     delay(70);
     noTone(ACTIVE_BUZZER);
     delay(70);
-    tone(ACTIVE_BUZZER, 1000);
+    tone(ACTIVE_BUZZER, 500);
     delay(70);
     noTone(ACTIVE_BUZZER);
 
     // Setup communication and anti-tip
     setupCommunication();
     setupAntitip();
+
+    tone(ACTIVE_BUZZER, 1000);
+    delay(70);
+    noTone(ACTIVE_BUZZER);
+    delay(70);
+    tone(ACTIVE_BUZZER, 1000);
+    delay(70);
+    noTone(ACTIVE_BUZZER);
 }
 
 void loop()
@@ -36,6 +44,4 @@ void loop()
             sendAntiTip(gyroY.getMedian());
         }
     }
-    
-    delayMicroseconds(250);
 }
